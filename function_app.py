@@ -99,3 +99,6 @@ def upload_csv_to_postgres(req: func.HttpRequest) -> func.HttpResponse:
         return func.HttpResponse("Success", status_code=200)
     except Exception as e:
         return func.HttpResponse(f"Error: {str(e)}", status_code=500)
+
+
+# TODO: unvalidated pipeline
