@@ -1,73 +1,63 @@
-# ETL Data Pipeline Template
+# Azure ↔️ Postgres ELT Data Pipeline
 
+This project provides a template for an ELT (Extract, Load, Transform) data pipeline that moves data between Azure Blob Storage and a PostgreSQL database, with transformation and reporting steps in between. The pipeline is implemented as an Azure Function App in Python.
 
-### General Approach to Building an ETL Data Pipeline & Issue Tickets below
+## Overview
 
----
+- **Extract**: Data is extracted from Azure Blob Storage (CSV files).
+- **Load**: Extracted data is loaded into a PostgreSQL database.
+- **Transform**: Data is transformed in Postgres (via stored procedures).
+- **Export**: Transformed data is exported back to Azure Blob Storage (as Excel files).
 
-## 0. Pre-Project: Data Modeling
+## Pipeline Steps
 
-- [ ] Create an Entity Relationship Diagram (ERD) for the data pipeline
-- [ ] Review and finalize data model with stakeholders
+1. **Upload CSV to Postgres**
+   - Triggered via the `/upload_csv_to_postgres` HTTP endpoint (POST).
+   - Downloads a CSV file from Azure Blob Storage.
+   - Loads the CSV data into a Postgres table (table name matches the CSV filename).
 
----
+2. **Data Cleaning & Export**
+   - Triggered via the `/ELT_data_cleaning` HTTP endpoint (GET).
+   - Calls a Postgres stored procedure to create a cleaned/filtered subset table.
+   - Reads the subset table into a Pandas DataFrame.
+   - Exports the DataFrame as an Excel file.
+   - Uploads the Excel file back to Azure Blob Storage.
 
-## 1. Project Setup
-- [ ] Agree on Branch Naming Convention
-- [ ] Initialize project repository and README
-- [ ] Set up Python virtual environment
-- [ ] Create and update `requirements.txt` with necessary dependencies
-- [ ] Set up `.gitignore` for Python and environment files
-- [ ] Add `.github` directory with relevant templates (issue, PR, etc.)
+## File Structure
 
----
+- `function_app.py` — Main Azure Function App with HTTP endpoints for pipeline steps.
+- `queries.sql` — Placeholder for SQL queries and stored procedures used in transformation.
+- `postgres/docker-compose.yml` — Local Postgres setup for development/testing.
+- `requirements.txt` — Python dependencies.
+- `local.settings.json` — Local Azure Functions settings (can be redirected for production).
 
-## 2. Environment Configuration
-- [ ] Create `.env` file for environment variables (API keys, DB credentials, etc.)
-- [ ] Implement logic to load environment variables securely (e.g., using `python-dotenv`)
+## Environment Variables
 
----
+The following environment variables must be set (e.g., in Azure or `local.settings.json`):
+- `AzureWebJobsStorage` — Azure Blob Storage connection string
+- `DB_USERNAME`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_SSL_MODE` — Postgres connection details
 
-## 3. Data Source Integration
-- [ ] Identify data source(s) (cloud database, API, file, etc.)
-- [ ] Implement connection logic to data source(s)
-- [ ] Test data extraction with sample queries or API calls
+## Usage
 
----
+1. **Start Postgres (locally):**
+   ```sh
+   cd postgres
+   docker-compose up -d
+   ```
+2. **Install dependencies:**
+   ```sh
+   pip install -r requirements.txt
+   ```
+3. **Run Azure Functions locally:**
+   ```sh
+   func start
+   ```
+4. **Trigger endpoints:**
+   - POST `/upload_csv_to_postgres` with JSON `{ "target_file": "yourfile.csv" }`
+   - GET `/ELT_data_cleaning`
 
-## 4. Database Target Setup
-- [ ] Choose target database (e.g., PostgreSQL, MySQL, SQLite)
-- [ ] Set up target database schema/tables as needed
-- [ ] Implement connection logic using SQLAlchemy and connection string
-- [ ] Test database connection and basic CRUD operations
+## Notes
+- The pipeline expects CSV files in a specified Azure Blob container.
+- The transformation logic (subset creation, cleaning) should be implemented in Postgres (see `queries.sql`).
+- The output Excel file is uploaded back to Azure Blob Storage for downstream use.
 
----
-
-## 5. Data Pipeline Implementation
-- [ ] Design and implement data extraction function(s)
-- [ ] Implement data loading (ELT) into target database
-- [ ] Implement data transformation/cleaning logic in DB with SQL queries
-- [ ] Add error handling and logging throughout pipeline
-
----
-
-## 6. Reporting & Analysis
-- [ ] Define reporting requirements and metrics
-- [ ] Implement data aggregation/analysis queries
-- [ ] Generate and export reports (e.g., CSV, PDF, dashboard)
-
----
-
-## 7. Testing & Validation
-- [ ] Write unit tests for key functions (extraction, transformation, loading)
-- [ ] Validate data integrity in target database
-- [ ] Perform end-to-end pipeline test
-
----
-
-## 8. Presentation
-- [ ] Create Slide Deck for Stakeholders
-- [ ] Delegate sections for each presenter
-- [ ] Attack Slide Deck Final to Project Root
-
----
