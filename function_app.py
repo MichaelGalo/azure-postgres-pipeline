@@ -56,7 +56,7 @@ def get_table_as_dataframe(table_name):
 
 @app.route(route="ELT_data_cleaning")
 def ELT_data_cleaning(req: func.HttpRequest) -> func.HttpResponse:
-    CONTAINER_NAME = "container_name"
+    CONTAINER_NAME = "TEIS"
     subset_data = "teis_subset_data()"
     with engine.begin() as conn:
         conn.execute(text(f"CALL {subset_data}"))
@@ -99,6 +99,3 @@ def upload_csv_to_postgres(req: func.HttpRequest) -> func.HttpResponse:
         return func.HttpResponse("Success", status_code=200)
     except Exception as e:
         return func.HttpResponse(f"Error: {str(e)}", status_code=500)
-
-
-# TODO: unvalidated pipeline
